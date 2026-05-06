@@ -1,7 +1,7 @@
 export const DIFY_CONFIG = {
-    API_BASE_URL: process.env.DIFY_API_BASE_URL || '',
+    API_BASE_URL: (process.env.DIFY_API_BASE_URL || '').replace(/\/$/, ''),
     API_KEY: process.env.DIFY_API_KEY || '',
-    DEFAULT_USER: 'lab4-demo-user',
+    DEFAULT_USER: 'projmvp-6-ui-user',
 }
 
 export function validateDifyConfig() {

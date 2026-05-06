@@ -8,8 +8,8 @@ const geist = Geist({ subsets: ["latin"], variable: '--font-sans' });
 const geistMono = Geist_Mono({ subsets: ["latin"], variable: '--font-mono' });
 
 export const metadata: Metadata = {
-  title: 'Lab 4 Demo CGU Copilot',
-  description: 'Created with v0',
+  title: 'Econometric Causal Design Assistant',
+  description: 'A Dify-powered chatbot UI for choosing and stress-testing econometric causal research designs.',
   generator: 'v0.app',
   icons: {
     icon: [

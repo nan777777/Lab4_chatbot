@@ -20,10 +20,10 @@ export function ThinkingSteps({ steps }: ThinkingStepsProps) {
         <div className="mb-3">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-red-50/50 bg-red-50 text-primary border border-red-100"
+                className="flex items-center gap-2 rounded-md border border-primary/20 bg-primary/10 px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/15"
             >
                 <Brain className="size-4" />
-                {meaningfulSteps.length} Workflow Process{meaningfulSteps.length > 1 ? 'es' : ''}
+                {meaningfulSteps.length} workflow step{meaningfulSteps.length > 1 ? 's' : ''}
                 {isOpen ? (
                     <ChevronUp className="size-4" />
                 ) : (
@@ -32,7 +32,7 @@ export function ThinkingSteps({ steps }: ThinkingStepsProps) {
             </button>
 
             {isOpen && (
-                <div className="mt-3 space-y-3 border-l-2 pl-4 ml-2 border-red-100">
+                <div className="mt-3 ml-2 space-y-3 border-l-2 border-primary/20 pl-4">
                     {meaningfulSteps.map((step, i) => (
                         <div key={i} className="text-sm space-y-1.5">
                             {step.tool && (

@@ -46,7 +46,17 @@ export async function POST(request: NextRequest) {
         })
 
         if (!difyResponse.ok) {
-            return new Response(JSON.stringify({ error: `Dify error: ${difyResponse.status}` }), {
+            let errorMessage = `Dify error: ${difyResponse.status}`
+            try {
+                const errorBody = await difyResponse.json()
+                if (errorBody?.message) {
+                    errorMessage = `${errorMessage} - ${errorBody.message}`
+                }
+            } catch {
+                // Keep the status-only message when Dify does not return JSON.
+            }
+
+            return new Response(JSON.stringify({ error: errorMessage }), {
                 status: difyResponse.status,
                 headers: { 'Content-Type': 'application/json' },
             })
