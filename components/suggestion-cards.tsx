@@ -5,7 +5,7 @@ import { ArrowRight, GitBranch, KeyRound, Ruler, UsersRound } from 'lucide-react
 const suggestions = [
   {
     icon: GitBranch,
-    title: 'Staggered Policy Adoption',
+    title: 'Difference-in-Differences Example',
     subtitle: 'Minimum wage and youth employment',
     query: `Causal question: Does raising a state minimum wage reduce youth employment?
 Treatment variable: An indicator that equals 1 after a state minimum wage increase takes effect in a state-quarter.
@@ -19,7 +19,7 @@ Question: Which MVP causal design family fits best, and what assumptions and dia
   },
   {
     icon: Ruler,
-    title: 'Cutoff-Based Assignment',
+    title: 'Regression Discontinuity Example',
     subtitle: 'Class size and student achievement',
     query: `Causal question: What is the effect of smaller class size on student achievement?
 Treatment variable: Being assigned to a smaller class because a grade cohort exceeds the enrollment cutoff.
@@ -34,7 +34,7 @@ Question: Which MVP causal design family fits best, and what assumptions and dia
   },
   {
     icon: KeyRound,
-    title: 'Instrument Candidate',
+    title: 'Instrumental Variables Example',
     subtitle: 'Quarter of birth and schooling',
     query: `Causal question: What is the effect of years of schooling on adult earnings?
 Treatment variable: Years of completed schooling.
@@ -48,7 +48,7 @@ Question: Which MVP causal design family fits best, and what assumptions and dia
   },
   {
     icon: UsersRound,
-    title: 'Observational Comparison',
+    title: 'Matching Example',
     subtitle: 'Job training and later earnings',
     query: `Causal question: What is the effect of participating in a job training program on later earnings?
 Treatment variable: Participation in the job training program.
@@ -68,27 +68,22 @@ interface SuggestionCardsProps {
 
 export function SuggestionCards({ onSelect }: SuggestionCardsProps) {
   return (
-    <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
+    <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2">
       {suggestions.map((suggestion) => (
         <button
           key={suggestion.title}
           type="button"
           onClick={() => onSelect(suggestion.query)}
-          className="group flex min-h-40 cursor-pointer flex-col items-start justify-between rounded-lg border-2 border-emerald-700/45 bg-emerald-950/8 p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-emerald-700 hover:bg-emerald-950/15 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700/35 dark:border-emerald-400/35 dark:bg-emerald-950/30 dark:hover:border-emerald-300 dark:hover:bg-emerald-950/50"
+          className="group flex min-h-24 cursor-pointer items-start gap-3 rounded-lg border border-emerald-200 bg-transparent p-3 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 dark:border-emerald-900/70 dark:bg-emerald-950/55 dark:hover:border-emerald-700 dark:hover:bg-emerald-900/45"
         >
-          <div className="flex w-full items-start justify-between gap-3">
-            <div className="flex size-10 items-center justify-center rounded-md bg-emerald-800 text-white shadow-sm transition-colors group-hover:bg-emerald-700 dark:bg-emerald-400 dark:text-emerald-950 dark:group-hover:bg-emerald-300">
-              <suggestion.icon className="size-5" />
-            </div>
-            <span className="inline-flex items-center gap-1 rounded-md bg-emerald-800 px-2 py-1 text-xs font-semibold text-white shadow-sm transition-colors group-hover:bg-emerald-700 dark:bg-emerald-300 dark:text-emerald-950 dark:group-hover:bg-emerald-200">
-              Run demo
-              <ArrowRight className="size-3" />
-            </span>
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-transparent text-emerald-700 transition-colors group-hover:text-emerald-800 dark:bg-emerald-900/80 dark:text-emerald-300 dark:group-hover:bg-emerald-700 dark:group-hover:text-emerald-50">
+            <suggestion.icon className="size-4" />
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-emerald-950 dark:text-emerald-50">{suggestion.title}</p>
-            <p className="mt-1 text-sm leading-5 text-emerald-950/70 dark:text-emerald-100/70">{suggestion.subtitle}</p>
+            <p className="mt-1 text-xs leading-5 text-emerald-800/80 dark:text-emerald-200/75">{suggestion.subtitle}</p>
           </div>
+          <ArrowRight className="mt-0.5 size-4 shrink-0 text-emerald-700/70 transition-transform group-hover:translate-x-0.5 group-hover:text-emerald-800 dark:text-emerald-300/75 dark:group-hover:text-emerald-200" />
         </button>
       ))}
     </div>

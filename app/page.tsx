@@ -8,7 +8,7 @@ import {
   Brain,
   CalendarClock,
   Check,
-  ClipboardList,
+  ChevronDown,
   Copy,
   Database,
   FileSearch,
@@ -25,8 +25,6 @@ import {
   Scale,
   SearchCheck,
   Send,
-  ShieldCheck,
-  Sparkles,
   Sun,
   ThumbsDown,
   ThumbsUp,
@@ -42,24 +40,6 @@ import { Message, ThinkingStep } from '@/types/chat'
 
 const DEMO_USER_ID = 'projmvp-6-ui-user'
 
-const workflowStages = [
-  {
-    label: 'Structured intake',
-    detail: 'Question, unit, treatment, outcome, timing, data structure',
-    icon: ClipboardList,
-  },
-  {
-    label: 'Parallel design triage',
-    detail: 'MVP scope: DID, RDD, IV, and Matching',
-    icon: SearchCheck,
-  },
-  {
-    label: 'Diagnostics',
-    detail: 'Assumptions, threats, red flags, and next analytical steps',
-    icon: ShieldCheck,
-  },
-]
-
 const designFamilies = [
   { name: 'Staggered DID', signal: 'Treatment timing varies across units', icon: GitBranch },
   { name: 'RDD', signal: 'A cutoff determines treatment assignment', icon: Ruler },
@@ -68,38 +48,46 @@ const designFamilies = [
 ]
 
 const intakeFields = [
-  'Causal question',
-  'Treatment definition',
-  'Outcome measure',
-  'Unit of analysis',
-  'Data structure',
-  'Treatment timing',
-  'Comparison group',
-  'Institutional context',
+  { title: 'Causal question', text: 'What causes what, and for whom.' },
+  { title: 'Treatment definition', text: 'The policy, exposure, or intervention.' },
+  { title: 'Outcome measure', text: 'The result the design explains.' },
+  { title: 'Unit of analysis', text: 'The level of observation.' },
+  { title: 'Data structure', text: 'Cross-section, panel, or repeated data.' },
+  { title: 'Treatment timing', text: 'When treatment starts or varies.' },
+  { title: 'Comparison group', text: 'Untreated or not-yet-treated cases.' },
+  { title: 'Institutional context', text: 'Rules and setting details that matter.' },
 ]
 
 const outputBlocks = [
   {
     title: 'Recommended design family',
-    text: 'A ranked recommendation with confidence and alternatives.',
+    text: 'A ranked recommendation of plausible causal designs.',
     icon: Scale,
   },
   {
+    title: 'Why this design fits',
+    text: 'A short explanation linking your setting to the design.',
+    icon: SearchCheck,
+  },
+  {
     title: 'Identification assumptions',
-    text: 'The logic that must hold before estimation makes sense.',
+    text: 'Key assumptions that must hold for credibility.',
     icon: Brain,
   },
   {
     title: 'Threats and red flags',
-    text: 'Where the design can fail, including missing information.',
+    text: 'Weaknesses, missing information, or design risks.',
     icon: AlertTriangle,
   },
   {
     title: 'Next-step checklist',
-    text: 'Diagnostics such as pre-trends, manipulation checks, or balance.',
+    text: 'Diagnostics, robustness checks, and follow-up questions.',
     icon: CalendarClock,
   },
 ]
+
+const responsibilityStatement =
+  'This tool provides design guidance, not final proof of causality. Verify assumptions with data, domain knowledge, and advisor review.'
 
 export default function Home() {
   const { theme, setTheme } = useTheme()
@@ -113,6 +101,9 @@ export default function Home() {
   const [streamingThoughts, setStreamingThoughts] = useState<ThinkingStep[]>([])
   const [isStreaming, setIsStreaming] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
+  const [examplesOpen, setExamplesOpen] = useState(false)
+  const [intakeOpen, setIntakeOpen] = useState(false)
+  const [outputOpen, setOutputOpen] = useState(false)
 
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false)
   const [currentFeedbackMessageId, setCurrentFeedbackMessageId] = useState<string | null>(null)
@@ -425,34 +416,12 @@ export default function Home() {
                 <Scale className="size-6" />
               </div>
               <div className="min-w-0">
-                <h1 className="truncate text-base font-semibold">Econometric design triage</h1>
+                <h1 className="truncate text-base font-semibold">Causal Design Assistant</h1>
               </div>
             </div>
           </div>
 
-          <div className="flex-1 space-y-6 overflow-y-auto px-5 py-5">
-            <section>
-              <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
-                <Sparkles className="size-4 text-primary" />
-                Workflow
-              </div>
-              <div className="space-y-3">
-                {workflowStages.map((stage, index) => (
-                  <div key={stage.label} className="flex gap-3 rounded-lg border border-border bg-background p-3">
-                    <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-                      <stage.icon className="size-4" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium">
-                        {index + 1}. {stage.label}
-                      </div>
-                      <p className="mt-1 text-xs leading-5 text-muted-foreground">{stage.detail}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-
+          <div className="flex flex-1 flex-col overflow-hidden px-5 pb-4 pt-8">
             <section>
               <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
                 <FileSearch className="size-4 text-primary" />
@@ -471,13 +440,13 @@ export default function Home() {
               </div>
             </section>
 
-            <section className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/25 dark:text-amber-100">
+            <section className="mt-auto rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/25 dark:text-amber-100">
               <div className="flex items-center gap-2 text-sm font-semibold">
                 <AlertTriangle className="size-4" />
                 Guardrail
               </div>
               <p className="mt-2 text-xs leading-5">
-                When evidence is incomplete, the assistant should ask for missing design features instead of forcing a recommendation.
+                The assistant does not force a recommendation when the research setting is incomplete. It will first ask for missing causal design details.
               </p>
             </section>
           </div>
@@ -487,12 +456,12 @@ export default function Home() {
       <main className="flex min-w-0 flex-1 flex-col">
         <header className="flex min-h-16 items-center justify-between border-b border-border bg-background/85 px-4 backdrop-blur-md sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground xl:hidden">
+            <div className={`flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground ${hasMessages ? 'xl:hidden' : ''}`}>
               <Scale className="size-5" />
             </div>
             <div className="min-w-0">
               <h2 className="truncate text-sm font-semibold sm:text-base">
-                Econometric Causal Design Assistant
+                {hasMessages ? 'Design Review' : 'Econometric Causal Design Assistant'}
               </h2>
               <p className="truncate text-xs text-muted-foreground">
                 {hasMessages ? `${messageCount} messages in this design review` : 'Structured guidance before estimation'}
@@ -529,82 +498,189 @@ export default function Home() {
 
         <div className="flex-1 overflow-y-auto">
           {!hasMessages ? (
-            <div className="mx-auto grid min-h-full w-full max-w-6xl gap-6 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:px-8">
-              <section className="flex flex-col justify-center">
-                <div className="mb-7 max-w-3xl">
+            <div className="mx-auto w-full max-w-[960px] px-4 py-8 lg:px-8">
+              <section className="flex flex-col">
+                <div className="w-full">
                   <h2 className="text-3xl font-semibold tracking-normal text-foreground sm:text-4xl">
                     Turn a rough research idea into a defensible identification plan.
                   </h2>
-                  <p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground">
-                    Describe the policy, treatment timing, dataset, and comparison group. The assistant will rank candidate designs, challenge assumptions, and surface diagnostics before you run a model.
+                  <p className="mt-4 max-w-[820px] text-base leading-7 text-muted-foreground">
+                    Describe your causal question, treatment, outcome, data structure, timing, and comparison group. The assistant will recommend candidate causal designs, explain key assumptions, flag missing information, and suggest next diagnostic checks.
                   </p>
-                </div>
-
-                <div>
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <div>
-                      <div className="flex items-center gap-2 text-sm font-semibold">
-                        <PlayCircle className="size-4 text-primary" />
-                        Demo cases
-                      </div>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        Ready-to-run examples with complete intake details.
-                      </p>
+                  <div className="mt-7 w-full">
+                    <div className="mb-2 text-lg font-semibold text-foreground">
+                      Describe your research idea
                     </div>
-                    <span className="rounded-md border border-emerald-700/40 bg-emerald-950/10 px-2 py-1 text-xs font-semibold text-emerald-900 dark:border-emerald-400/40 dark:bg-emerald-950/50 dark:text-emerald-100">
-                      Clickable
-                    </span>
+                    {selectedFile && (
+                      <div className="mb-3 flex items-center gap-3 rounded-lg border border-border bg-card p-3">
+                        <div className="flex size-10 items-center justify-center rounded-md border border-border bg-background shadow-sm">
+                          {isUploading ? (
+                            <Loader2 className="size-5 animate-spin text-primary" />
+                          ) : selectedFile.type.startsWith('image/') ? (
+                            <ImageIcon className="size-5 text-primary" />
+                          ) : (
+                            <FileText className="size-5 text-primary" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium text-foreground">{selectedFile.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {isUploading ? 'Uploading to design workflow...' : `${(selectedFile.size / 1024).toFixed(1)} KB ready for analysis`}
+                          </p>
+                        </div>
+                        <button
+                          onClick={handleRemoveFile}
+                          className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted"
+                          disabled={isUploading}
+                          title="Remove attachment"
+                        >
+                          <X className="size-4" />
+                        </button>
+                      </div>
+                    )}
+
+                    <div className="relative flex min-h-20 items-end gap-3 rounded-lg border-2 border-emerald-700 bg-card px-3 py-3 shadow-sm transition-all hover:border-emerald-800 hover:shadow-md focus-within:border-emerald-800 focus-within:ring-4 focus-within:ring-emerald-700/15 dark:border-emerald-700 dark:hover:border-emerald-500 dark:hover:shadow-[0_0_24px_rgba(74,185,162,0.08)] dark:focus-within:border-emerald-500 dark:focus-within:ring-emerald-500/20">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        className="hidden"
+                        onChange={handleFileSelect}
+                        accept=".pdf,.txt,.md,.csv,.xlsx,.docx,.pptx,image/png,image/jpeg,image/gif,image/webp,image/svg+xml"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="mb-1 flex size-10 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                        title="Attach codebook, memo, abstract, or notes"
+                      >
+                        <Paperclip className="size-5" />
+                      </button>
+                      <textarea
+                        ref={inputRef}
+                        className="max-h-40 min-h-14 flex-1 resize-none overflow-y-auto border-0 bg-transparent px-3 py-4 text-base leading-6 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0"
+                        placeholder="Describe your causal question, treatment, outcome, data structure, timing, and comparison group..."
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        disabled={isLoading}
+                        rows={1}
+                      />
+                      <button
+                        onClick={() => handleSendMessage()}
+                        disabled={!canSend}
+                        className="mb-1 flex size-11 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-md transition-all hover:bg-primary/90 hover:shadow-lg active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                        title="Send to design assistant"
+                      >
+                        {isLoading ? (
+                          <Loader2 className="size-5 animate-spin" />
+                        ) : (
+                          <Send className="size-5.5" />
+                        )}
+                      </button>
+                    </div>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                      You can start with an incomplete idea. The assistant will ask follow-up questions if key design details are missing.
+                    </p>
                   </div>
-                  <SuggestionCards onSelect={handleSendMessage} />
                 </div>
 
-                <div className="mt-8">
-                  <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
-                    <Database className="size-4 text-primary" />
-                    Intake checklist
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                    {intakeFields.map((field) => (
-                      <div
-                        key={field}
-                        className="cursor-default rounded-lg border border-border bg-card px-3 py-2 text-sm text-card-foreground"
-                      >
-                        {field}
+                <div className="mt-10 w-full space-y-3">
+                  <section className="rounded-lg border border-border bg-card/70 shadow-sm">
+                    <button
+                      type="button"
+                      onClick={() => setExamplesOpen((open) => !open)}
+                      aria-expanded={examplesOpen}
+                      className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/50"
+                    >
+                      <div>
+                        <div className="flex items-center gap-2 text-base font-semibold text-foreground">
+                          <PlayCircle className="size-4" />
+                          Try an Example
+                        </div>
                       </div>
-                    ))}
-                  </div>
+                      <ChevronDown
+                        className={`size-4 shrink-0 text-muted-foreground transition-transform ${examplesOpen ? 'rotate-180' : ''}`}
+                      />
+                    </button>
+                    {examplesOpen && (
+                      <div className="border-t border-border px-4 pb-4 pt-3">
+                        <SuggestionCards onSelect={handleSendMessage} />
+                      </div>
+                    )}
+                  </section>
+
+                  <section className="rounded-lg border border-border bg-card/70 shadow-sm">
+                    <button
+                      type="button"
+                      onClick={() => setIntakeOpen((open) => !open)}
+                      aria-expanded={intakeOpen}
+                      className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/50"
+                    >
+                      <div className="flex items-center gap-2 text-base font-semibold text-foreground">
+                        <Database className="size-4" />
+                        Intake Checklist
+                      </div>
+                      <ChevronDown
+                        className={`size-4 shrink-0 text-muted-foreground transition-transform ${intakeOpen ? 'rotate-180' : ''}`}
+                      />
+                    </button>
+                    {intakeOpen && (
+                      <div className="grid gap-4 border-t border-border px-4 pb-4 pt-4 sm:grid-cols-2">
+                        {intakeFields.map((field) => (
+                          <div
+                            key={field.title}
+                            className="flex items-start gap-3"
+                          >
+                            <Check className="mt-0.5 size-5 shrink-0 stroke-[1.5] text-muted-foreground" />
+                            <div>
+                              <h3 className="text-sm font-semibold leading-5 text-foreground">{field.title}</h3>
+                              <p className="mt-1 text-sm leading-5 text-muted-foreground">{field.text}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </section>
+
+                  <section className="rounded-lg border border-border bg-muted/30 shadow-sm">
+                    <button
+                      type="button"
+                      onClick={() => setOutputOpen((open) => !open)}
+                      aria-expanded={outputOpen}
+                      className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/50"
+                    >
+                      <div className="flex items-center gap-2 text-base font-semibold text-foreground">
+                        <SearchCheck className="size-4" />
+                        What You Will Receive
+                      </div>
+                      <ChevronDown
+                        className={`size-4 shrink-0 text-muted-foreground transition-transform ${outputOpen ? 'rotate-180' : ''}`}
+                      />
+                    </button>
+                    {outputOpen && (
+                      <div className="grid gap-4 border-t border-border px-4 pb-4 pt-4 sm:grid-cols-2">
+                        {outputBlocks.map((block) => (
+                          <div key={block.title} className="flex items-start gap-3">
+                            <block.icon className="mt-0.5 size-6 shrink-0 stroke-[1.5] text-muted-foreground" />
+                            <div>
+                              <h3 className="text-sm font-semibold leading-5 text-foreground">{block.title}</h3>
+                              <p className="mt-1 text-sm leading-5 text-muted-foreground">{block.text}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </section>
                 </div>
               </section>
 
-              <aside className="flex flex-col justify-center">
-                <div className="rounded-lg border border-border bg-muted/30 p-5 shadow-none">
-                  <div className="mb-5 flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-                      <SearchCheck className="size-4" />
-                      Expected output
-                    </div>
-                    <span className="rounded-md border border-border bg-background/70 px-2 py-1 text-xs font-medium text-muted-foreground">
-                      Reference only
-                    </span>
-                  </div>
-
-                  <div className="pointer-events-none select-none">
-                    <div className="grid grid-cols-2 gap-x-5 gap-y-6">
-                      {outputBlocks.map((block) => (
-                        <div key={block.title} className="text-center">
-                          <block.icon className="mx-auto size-11 stroke-[1.5] text-muted-foreground" />
-                          <h3 className="mx-auto mt-3 max-w-32 text-sm font-semibold leading-5 text-foreground">
-                            {block.title}
-                          </h3>
-                          <p className="mx-auto mt-1 max-w-36 text-xs leading-5 text-muted-foreground">
-                            {block.text}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+              <div className="mt-8 w-full">
+                <div className="rounded-lg border border-border/70 bg-muted/20 px-3 py-1.5">
+                  <p className="text-center text-xs leading-5 text-muted-foreground">
+                    {responsibilityStatement}
+                  </p>
                 </div>
-              </aside>
+              </div>
             </div>
           ) : (
             <div className="mx-auto max-w-4xl space-y-7 px-4 py-7 sm:px-6 lg:px-8">
@@ -733,80 +809,79 @@ export default function Home() {
           )}
         </div>
 
-        <div className="border-t border-border bg-background/92 px-4 py-4 backdrop-blur-lg">
-          <div className="mx-auto max-w-4xl">
-            {selectedFile && (
-              <div className="mb-3 flex items-center gap-3 rounded-lg border border-border bg-card p-3">
-                <div className="flex size-10 items-center justify-center rounded-md border border-border bg-background shadow-sm">
-                  {isUploading ? (
-                    <Loader2 className="size-5 animate-spin text-primary" />
-                  ) : selectedFile.type.startsWith('image/') ? (
-                    <ImageIcon className="size-5 text-primary" />
-                  ) : (
-                    <FileText className="size-5 text-primary" />
-                  )}
+        {hasMessages && (
+          <div className="border-t border-border bg-background/92 px-4 py-4 backdrop-blur-lg">
+            <div className="mx-auto max-w-4xl">
+              {selectedFile && (
+                <div className="mb-3 flex items-center gap-3 rounded-lg border border-border bg-card p-3">
+                  <div className="flex size-10 items-center justify-center rounded-md border border-border bg-background shadow-sm">
+                    {isUploading ? (
+                      <Loader2 className="size-5 animate-spin text-primary" />
+                    ) : selectedFile.type.startsWith('image/') ? (
+                      <ImageIcon className="size-5 text-primary" />
+                    ) : (
+                      <FileText className="size-5 text-primary" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-foreground">{selectedFile.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {isUploading ? 'Uploading to design workflow...' : `${(selectedFile.size / 1024).toFixed(1)} KB ready for analysis`}
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleRemoveFile}
+                    className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted"
+                    disabled={isUploading}
+                    title="Remove attachment"
+                  >
+                    <X className="size-4" />
+                  </button>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-foreground">{selectedFile.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {isUploading ? 'Uploading to design workflow...' : `${(selectedFile.size / 1024).toFixed(1)} KB ready for analysis`}
-                  </p>
-                </div>
+              )}
+
+              <div className="relative flex items-end gap-2 rounded-lg border border-emerald-700 bg-card p-2 shadow-sm transition-all hover:border-emerald-800 focus-within:border-emerald-800 focus-within:ring-2 focus-within:ring-emerald-700/15 dark:border-emerald-900/70 dark:hover:border-emerald-800 dark:focus-within:border-emerald-800 dark:focus-within:ring-emerald-800/35">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  className="hidden"
+                  onChange={handleFileSelect}
+                  accept=".pdf,.txt,.md,.csv,.xlsx,.docx,.pptx,image/png,image/jpeg,image/gif,image/webp,image/svg+xml"
+                />
                 <button
-                  onClick={handleRemoveFile}
-                  className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted"
-                  disabled={isUploading}
-                  title="Remove attachment"
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="mb-1 flex size-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  title="Attach codebook, memo, abstract, or notes"
                 >
-                  <X className="size-4" />
+                  <Paperclip className="size-5" />
+                </button>
+                <textarea
+                  ref={inputRef}
+                  className="max-h-36 min-h-12 flex-1 resize-none overflow-y-auto border-0 bg-transparent px-2 py-3 text-base leading-6 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0"
+                  placeholder="Add details or answer a diagnostic question..."
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  disabled={isLoading}
+                  rows={1}
+                />
+                <button
+                  onClick={() => handleSendMessage()}
+                  disabled={!canSend}
+                  className="mb-1 flex size-9 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-md transition-all hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+                  title="Send to design assistant"
+                >
+                  {isLoading ? (
+                    <Loader2 className="size-5 animate-spin" />
+                  ) : (
+                    <Send className="size-5" />
+                  )}
                 </button>
               </div>
-            )}
-
-            <div className="relative flex items-end gap-2 rounded-lg border border-border bg-card p-2 shadow-sm transition-all hover:border-input focus-within:ring-2 focus-within:ring-primary/20">
-              <input
-                type="file"
-                ref={fileInputRef}
-                className="hidden"
-                onChange={handleFileSelect}
-                accept=".pdf,.txt,.md,.csv,.xlsx,.docx,.pptx,image/png,image/jpeg,image/gif,image/webp,image/svg+xml"
-              />
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="mb-1 flex size-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                title="Attach codebook, memo, abstract, or notes"
-              >
-                <Paperclip className="size-5" />
-              </button>
-              <textarea
-                ref={inputRef}
-                className="max-h-36 min-h-12 flex-1 resize-none overflow-y-auto border-0 bg-transparent px-2 py-3 text-base leading-6 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0"
-                placeholder={hasMessages ? 'Add details or answer a diagnostic question...' : 'Describe your causal question, treatment, outcome, unit, data structure, and timing...'}
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={handleKeyDown}
-                disabled={isLoading}
-                rows={1}
-              />
-              <button
-                onClick={() => handleSendMessage()}
-                disabled={!canSend}
-                className="mb-1 flex size-9 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-md transition-all hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
-                title="Send to design assistant"
-              >
-                {isLoading ? (
-                  <Loader2 className="size-5 animate-spin" />
-                ) : (
-                  <Send className="size-5" />
-                )}
-              </button>
             </div>
-            <p className="mt-2 text-center text-xs text-muted-foreground">
-              Recommendations are design triage, not proof of identification. Verify assumptions with data, domain evidence, and instructor or advisor review.
-            </p>
           </div>
-        </div>
+        )}
       </main>
     </div>
   )
